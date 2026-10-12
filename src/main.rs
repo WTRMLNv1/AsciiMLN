@@ -18,7 +18,8 @@ use crate::math::mat::Mat4;
 use crate::math::vec::Vec3;
 use crate::rendering::camera::Camera;
 use crate::rendering::pipeline::{
-    project_vertex_with_depth, rasterize_transparent_triangle, rasterize_triangle, shade_char,
+    clip_and_project_triangle_with_depth, rasterize_transparent_triangle, rasterize_triangle,
+    shade_char,
 };
 use crate::world::{Block, CHUNK_SIZE, World};
 use windows_sys::Win32::Foundation::POINT;
@@ -892,18 +893,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     if Vec3::dot(normal, Vec3::sub(eye_position, vertices[0])) <= 0.0 {
                         continue;
                     }
-                    let projected = vertices
-                        .map(|vertex| project_vertex_with_depth(vertex, &mvp, width, height));
-                    let (Some(p0), Some(p1), Some(p2), Some(p3)) =
-                        (projected[0], projected[1], projected[2], projected[3])
-                    else {
-                        continue;
-                    };
                     let (ch, color) = block_shade(
                         face.block,
                         0.18 + Vec3::dot(normal, light_dir).max(0.0) * 0.82,
                     );
-                    for (a, b, c) in [(p0, p1, p2), (p0, p2, p3)] {
+                    for [a, b, c] in [
+                        [vertices[0], vertices[1], vertices[2]],
+                        [vertices[0], vertices[2], vertices[3]],
+                    ]
+                    .into_iter()
+                    .flat_map(|triangle| {
+                        clip_and_project_triangle_with_depth(triangle, &mvp, width, height)
+                    }) {
                         rasterize_triangle(&mut fb, a, b, c, ch, color);
                     }
                 }
@@ -917,18 +918,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     if Vec3::dot(normal, Vec3::sub(eye_position, vertices[0])) <= 0.0 {
                         continue;
                     }
-                    let projected = vertices
-                        .map(|vertex| project_vertex_with_depth(vertex, &mvp, width, height));
-                    let (Some(p0), Some(p1), Some(p2), Some(p3)) =
-                        (projected[0], projected[1], projected[2], projected[3])
-                    else {
-                        continue;
-                    };
                     let (ch, color) = block_shade(
                         Block::Water,
                         0.18 + Vec3::dot(normal, light_dir).max(0.0) * 0.82,
                     );
-                    for (a, b, c) in [(p0, p1, p2), (p0, p2, p3)] {
+                    for [a, b, c] in [
+                        [vertices[0], vertices[1], vertices[2]],
+                        [vertices[0], vertices[2], vertices[3]],
+                    ]
+                    .into_iter()
+                    .flat_map(|triangle| {
+                        clip_and_project_triangle_with_depth(triangle, &mvp, width, height)
+                    }) {
                         rasterize_transparent_triangle(&mut fb, a, b, c, ch, color, 0.38);
                     }
                 }
