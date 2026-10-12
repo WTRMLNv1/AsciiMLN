@@ -145,6 +145,38 @@ impl RelativeMouseLook {
     }
 }
 
+#[derive(Default)]
+pub(crate) struct Player {
+    /// Kept on the player so other entities can react to this state later.
+    pub(crate) high_mode: bool,
+    high_mode_until: Option<Instant>,
+}
+
+impl Player {
+    const HIGH_MODE_DURATION: Duration = Duration::from_secs(30);
+
+    fn activate_high_mode(&mut self) {
+        self.high_mode = true;
+        self.high_mode_until = Some(Instant::now() + Self::HIGH_MODE_DURATION);
+    }
+
+    fn high_mode_elapsed(&mut self) -> Option<Duration> {
+        if !self.high_mode {
+            return None;
+        }
+
+        let until = self.high_mode_until?;
+        let remaining = until.saturating_duration_since(Instant::now());
+        if remaining.is_zero() {
+            self.high_mode = false;
+            self.high_mode_until = None;
+            None
+        } else {
+            Some(Self::HIGH_MODE_DURATION - remaining)
+        }
+    }
+}
+
 fn screen_center() -> std::io::Result<POINT> {
     // SAFETY: GetSystemMetrics has no pointer arguments and is safe to query repeatedly.
     let width = unsafe { GetSystemMetrics(SM_CXSCREEN) };
@@ -170,6 +202,7 @@ enum GameState {
     },
     Playing {
         world: World,
+        player: Player,
         camera: Camera,
         input: MovementInput,
         mouse_look: RelativeMouseLook,
@@ -414,6 +447,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                                             let mut mouse_look = RelativeMouseLook::new()?;
                                             state = GameState::Playing {
                                                 world: World::new(seed),
+                                                player: Player::default(),
                                                 camera: Camera::new(
                                                     Vec3::new(0.5, 40.0, 5.0),
                                                     0.0,
@@ -458,6 +492,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         }
                         GameState::Playing {
                             world,
+                            player,
                             camera,
                             input,
                             mouse_look,
@@ -481,6 +516,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                             if unlock_requested {
                                 mouse_look.unlock();
                                 input.clear();
+                            } else if matches!(key.code, KeyCode::Char('h' | 'H'))
+                                && key.kind == KeyEventKind::Press
+                            {
+                                player.activate_high_mode();
                             } else if matches!(key.code, KeyCode::Char('q' | 'Q'))
                                 && key.kind == KeyEventKind::Press
                             {
@@ -654,6 +693,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
             GameState::Playing {
                 world,
+                player,
                 camera,
                 input,
                 mouse_look,
@@ -897,7 +937,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     fb.tint_blue(0.20);
                 }
 
-                let status = "ASCII Minecraft | WASD move | Space jump/up | double Space fly | C down | Esc/Ctrl+C release mouse | q quits";
+                if let Some(high_mode_elapsed) = player.high_mode_elapsed() {
+                    let elapsed_seconds = high_mode_elapsed.as_secs_f32();
+                    fb.apply_rainbow_hue(elapsed_seconds);
+                    fb.wobble_world(elapsed_seconds);
+                }
+
+                let status = "ASCII Minecraft | WASD move | Space jump/up | double Space fly | C down | H high mode | Esc/Ctrl+C release mouse | q quits";
                 for (x, ch) in status.chars().take(width).enumerate() {
                     fb.set(x, height - 1, ch);
                 }

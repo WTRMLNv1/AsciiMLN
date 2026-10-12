@@ -1,7 +1,10 @@
 [package]
-name = "ascii-minecraft"
-version = "0.1.0"
+name = "AsciiMLN"
+version = "1.1.0"
 edition = "2024"
+authors = ["WTRMLNv1"]
+license = "MIT"
+description = "Minecraft, but in your terminal"
 
 [[bin]]
 # Keep the crate name descriptive while making the installed command short and stable.

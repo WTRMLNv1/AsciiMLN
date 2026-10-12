@@ -64,7 +64,7 @@ held together mostly with rust and spite, specifically:
 * `C`: Down (shift wasn't working, sybau)
 * `Esc` or `Ctrl + C`: Releases the cursor lock (i implemented cursor lock losers)
 * `Q`: Quits the game
-* `H`: Makes you high (coming soon)
+* `H`: Makes you high for 30 seconds (rainbow world + mild screen wobble)
 
 ## Install on Windows
 
