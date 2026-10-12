@@ -25,6 +25,7 @@ fucktastic!
 * works on resize in theory (breaks slightly)
 * ~~work in the mines~~ mining was also implemented (DDA Ray casting 🤓👆) with 4.5 blocks distance max to vapourise blocks (no delay lmfao)
 * clouds and water are also mineable because NOTHING is sacred anymore
+* pressing H makes you high for 30 seconds and makes the world rainbow and slight screen wobble.
 
 ## gameplay typa shi
 
@@ -37,7 +38,7 @@ to see an interactive demo of the gameplay, download the fucking thing lmao
 
 held together mostly with rust and spite, specifically:
 
-* **`main.rs`**: 760 line long monster that haunts you at night, does basically most of the stuff
+* **`main.rs`**: 984 line long monster that haunts you at night, does basically most of the stuff
 * **`framebuffer.rs`**: A Z-buffered 2D character array used to compose frames before they are presented.
 * **`rendering`**: Implements the 3D pipeline, including:
 
@@ -64,7 +65,7 @@ held together mostly with rust and spite, specifically:
 * `C`: Down (shift wasn't working, sybau)
 * `Esc` or `Ctrl + C`: Releases the cursor lock (i implemented cursor lock losers)
 * `Q`: Quits the game
-* `H`: Makes you high for 30 seconds (rainbow world + mild screen wobble)
+* `H`: Makes you high for 30 seconds (press H again to refresh, and seek proffesional help)
 
 ## Install on Windows
 
@@ -130,7 +131,7 @@ cargo test
 
 ### 🔫⚖️ License
 
-MIT license. do whatever you want (assuming you understand the 31kb main.rs BAHAHA)
+MIT license. do whatever you want (assuming you understand the 40kb main.rs BAHAHA)
 
 ---
 
